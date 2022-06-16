@@ -13,7 +13,7 @@ you can tap twice to open that cell.
 
 you lose if you open (double tap on) a cell where there is a bomb.
 
-you win if you open all the cells without getting expoaded.
+you win if you open all the cells without getting exploaded.
 
 you can change sizes of the grid (matrix)
 you can edit how maany bombs will be in the game
