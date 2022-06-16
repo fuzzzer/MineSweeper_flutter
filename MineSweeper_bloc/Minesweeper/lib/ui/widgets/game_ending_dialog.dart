@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:minesweeper_refactored/core/global_variables.dart';
 import '../../logic/Cubits/grid_cubit/grid_cubit.dart';
 
 Future<dynamic> gameEndingDialog(context,
@@ -12,7 +11,6 @@ Future<dynamic> gameEndingDialog(context,
       actions: <Widget>[
         TextButton(
           onPressed: () {
-            computing = false;
             context
                 .read<GridCubit>()
                 .setUpdating(); //TODO: updatefrom here and not from state

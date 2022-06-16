@@ -4,6 +4,7 @@
 
 const int startingBombsCount = 20;
 const int startingSizesOfGrid = 10;
+const int startingTime = 100;
 
 const int neigborhoodSize = 0; // how far does neighborhood strech
 

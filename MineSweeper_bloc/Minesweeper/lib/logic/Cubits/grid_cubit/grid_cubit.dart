@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/Material.dart';
@@ -6,8 +9,6 @@ import 'package:minesweeper_refactored/core/info.dart';
 import '../../../core/keys.dart';
 import '../../../ui/widgets/game_ending_dialog.dart';
 import '../../global_logics/initialize_squares_cubit_matrix.dart';
-import '../../global_logics/reveal_adjacent_squares.dart';
-import '../../global_logics/reveal_all.dart';
 import '../square_cubit/square_cubit.dart';
 import '../square_selector_cubit/square_selector_cubit.dart';
 
@@ -19,8 +20,11 @@ class GridCubit extends Cubit<GridState> {
   }
 
   List<List<SquareCubit>> gridData;
+
   int bombsCount = startingBombsCount;
   int sizesOfGrid = startingSizesOfGrid;
+  bool boxOpeningProcessRunning = false;
+  int squaresOpened = 0;
 
   late int currentColumn;
   late int currentRow;
@@ -42,10 +46,12 @@ class GridCubit extends Cubit<GridState> {
   }
 
   void setUpdating() async {
+    boxOpeningProcessRunning = false;
     emit(GridUpdating());
   }
 
   void updateGrid() async {
+    squaresOpened = 0;
     gridData =
         await compute(initializedCubitsForGrid, ([bombsCount, sizesOfGrid]));
     setStartingSelectedCell();
@@ -53,14 +59,17 @@ class GridCubit extends Cubit<GridState> {
     emit(GridInitial(gridData));
   }
 
-  void setSettings(final int numberOfBombs, final int size) {
-    bool changes = false;
+  void setSettings(
+    final int numberOfBombs,
+    final int size,
+  ) {
+    // bool changes = false;
 
     if (size != sizesOfGrid && size > 4 && size < 26) {
       if ((numberOfBombs > 0 && numberOfBombs < size * size) ||
           (bombsCount < size * size)) {
         sizesOfGrid = size;
-        changes = true;
+        // changes = true;
       }
     } // bombs should not be more than size or it will crash
 
@@ -68,7 +77,7 @@ class GridCubit extends Cubit<GridState> {
         numberOfBombs > 0 &&
         numberOfBombs < sizesOfGrid * sizesOfGrid) {
       bombsCount = numberOfBombs;
-      changes = true;
+      // changes = true;
     }
 
     // if (changes) {
@@ -128,10 +137,8 @@ class GridCubit extends Cubit<GridState> {
         currentX < offset.dx + gridScreenSize &&
         currentY > offset.dy &&
         currentY < offset.dy + gridScreenSize) {
-      currentColumn =
-          ((currentX - offset.dx) / gridScreenSize * sizesOfGrid).round();
-      currentRow =
-          ((currentY - offset.dy) / gridScreenSize * sizesOfGrid).round();
+      currentColumn = (currentX - offset.dx) * sizesOfGrid ~/ gridScreenSize;
+      currentRow = (currentY - offset.dy) * sizesOfGrid ~/ gridScreenSize;
     }
     setSquareSelected();
   }
@@ -156,6 +163,73 @@ class GridCubit extends Cubit<GridState> {
       } else {
         revealAdjacents(gridData, currentRow, currentColumn);
       }
+    }
+  }
+
+  void timeOut() {
+    revealAll(gridData);
+    gameEndingDialog(navigatorKey.currentContext,
+        message: "Time out!", textColor: Colors.red);
+  }
+
+  void revealAll(
+    final List<List<SquareCubit>> allSquareCubitsData,
+  ) async {
+    boxOpeningProcessRunning = true;
+    for (int i = 0; i < allSquareCubitsData.length; i++) {
+      for (int j = 0; j < allSquareCubitsData[i].length; j++) {
+        if (boxOpeningProcessRunning &&
+            allSquareCubitsData[i][j].state is! SquareIsVisible &&
+            allSquareCubitsData[i][j].hasBomb) {
+          allSquareCubitsData[i][j].revealSquare();
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+      }
+    }
+  }
+
+  void revealAdjacents(
+    final List<List<SquareCubit>> allSquareCubitsData,
+    final int row,
+    final int column,
+  ) async {
+    // this is recursive method to reveal all cell that are not adjacent to the bomb
+    await Future.delayed(const Duration(microseconds: 200));
+    if ((allSquareCubitsData[row][column].bombsNear != 0) &&
+        (allSquareCubitsData[row][column].state is! SquareIsVisible)) {
+      revealCell(allSquareCubitsData, row, column);
+    }
+
+    if ((allSquareCubitsData[row][column].bombsNear == 0) &&
+        (allSquareCubitsData[row][column].state is! SquareIsVisible)) {
+      revealCell(allSquareCubitsData, row, column);
+
+      //this will go through adjacent cells and sets them to visible
+      final int startingRow = max(0, row - neigborhoodSize - 1);
+      final int endingRow =
+          min(allSquareCubitsData.length - 1, row + neigborhoodSize + 1);
+      final int startingColumn = max(0, column - neigborhoodSize - 1);
+      final int endingColumn =
+          min(allSquareCubitsData[0].length - 1, column + neigborhoodSize + 1);
+
+      for (int i = startingRow; i <= endingRow; i++) {
+        for (int j = startingColumn; j <= endingColumn; j++) {
+          revealAdjacents(allSquareCubitsData, i, j);
+        }
+      }
+    }
+  }
+
+  void revealCell(
+    final List<List<SquareCubit>> allSquareCubitsData,
+    final int row,
+    final int column,
+  ) {
+    allSquareCubitsData[row][column].revealSquare();
+    squaresOpened++;
+    if (sizesOfGrid * sizesOfGrid - squaresOpened == bombsCount) {
+      gameEndingDialog(navigatorKey.currentContext,
+          message: 'You Win!', textColor: Colors.green);
     }
   }
 

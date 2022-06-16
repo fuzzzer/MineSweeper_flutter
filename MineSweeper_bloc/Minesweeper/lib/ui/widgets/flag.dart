@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../logic/Cubits/flag_cubit/flag_cubit.dart';
 
 class Flag extends StatelessWidget {
-  final double iconSize = 50;
+  final double iconSize = 70;
 
   const Flag({Key? key}) : super(key: key);
 
@@ -21,7 +21,7 @@ class Flag extends StatelessWidget {
                 iconSize: iconSize,
                 icon: Icon(
                   Icons.flag,
-                  color: Colors.red,
+                  color: const Color.fromARGB(158, 244, 67, 54),
                   size: iconSize,
                 ),
                 onPressed: () => context.read<FlagCubit>().setFlagOn(),
@@ -41,7 +41,7 @@ class Flag extends StatelessWidget {
                 iconSize: iconSize,
                 icon: Icon(
                   Icons.flag,
-                  color: Colors.green,
+                  color: const Color.fromARGB(141, 76, 175, 79),
                   size: iconSize,
                 ),
                 onPressed: () => context.read<FlagCubit>().setFlagOff(),

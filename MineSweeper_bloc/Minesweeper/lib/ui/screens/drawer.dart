@@ -1,5 +1,8 @@
 import 'package:flutter/Material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:minesweeper_refactored/logic/Cubits/drawer_cubit/drawer_cubit.dart';
+import 'package:minesweeper_refactored/logic/Cubits/timer_cubit/timer_cubit.dart';
+import 'package:minesweeper_refactored/ui/widgets/text_input.dart';
 import '../../library/useful_methods.dart';
 import '../../logic/Cubits/grid_cubit/grid_cubit.dart';
 
@@ -8,8 +11,17 @@ class Settings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    TextInput numberOfBombs = TextInput(label: "Number Of Bombs");
-    TextInput squareSize = TextInput(label: "Square size");
+    TextInput time = TextInput(
+      label: "Time",
+      inputController: context.read<DrawerCubit>().timeInputController,
+    );
+    TextInput numberOfBombs = TextInput(
+        label: "Number Of Bombs",
+        inputController:
+            context.read<DrawerCubit>().numberOfBombsInputController);
+    TextInput squareSize = TextInput(
+        label: "Square size",
+        inputController: context.read<DrawerCubit>().squareSizeInputController);
 
     return SizedBox(
       height: 500,
@@ -17,12 +29,50 @@ class Settings extends StatelessWidget {
         Expanded(
           child: Column(
             children: [
+              Row(
+                children: [
+                  Expanded(child: time),
+                  SizedBox(
+                    height: 50,
+                    width: 50,
+                    child: BlocBuilder<TimerCubit, TimerState>(
+                      builder: (context, state) {
+                        return ElevatedButton(
+                          style: state.nextRoundTimerIsOn
+                              ? ElevatedButton.styleFrom(
+                                  primary:
+                                      const Color.fromARGB(151, 112, 14, 7))
+                              : ElevatedButton.styleFrom(
+                                  primary:
+                                      const Color.fromARGB(133, 5, 103, 8)),
+                          onPressed: () =>
+                              context.read<TimerCubit>().switchTimerMode(),
+                          child: state.nextRoundTimerIsOn
+                              ? const Text('off')
+                              : const Text('on'),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
               numberOfBombs,
               squareSize,
               ApplyButton(
-                label: "Apply",
+                label: Row(
+                  children: const [
+                    Icon(Icons.restart_alt),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text("Restart"),
+                      ),
+                    ),
+                  ],
+                ),
                 numberOfBombs: numberOfBombs,
                 squareSize: squareSize,
+                timeInput: time,
               ),
             ],
           ),
@@ -33,54 +83,18 @@ class Settings extends StatelessWidget {
   }
 }
 
-class TextInput extends StatefulWidget {
-  final String label;
-  final int id;
-  final inputController = TextEditingController();
-  final Color unFocusedColor = const Color.fromARGB(255, 104, 104, 104);
-  final Color focusedColor = const Color.fromARGB(255, 253, 92, 52);
-  final double borderWidth = 2;
-
-  TextInput({Key? key, this.label = "", this.id = 0}) : super(key: key);
-
-  @override
-  State<TextInput> createState() => _TextInputState();
-}
-
-class _TextInputState extends State<TextInput> {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      child: TextField(
-        keyboardType: TextInputType.number,
-        controller: widget.inputController,
-        decoration: InputDecoration(
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-                color: widget.unFocusedColor, width: widget.borderWidth),
-          ),
-          focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                  color: widget.focusedColor, width: widget.borderWidth)),
-          labelText: widget.label,
-          labelStyle: TextStyle(color: widget.unFocusedColor),
-        ),
-      ),
-    );
-  }
-}
-
 class ApplyButton extends StatelessWidget {
-  final String label;
+  final Widget label;
   final TextInput numberOfBombs;
   final TextInput squareSize;
+  final TextInput timeInput;
 
   const ApplyButton(
       {Key? key,
-      this.label = "",
+      this.label = const SizedBox.shrink(),
       required this.numberOfBombs,
-      required this.squareSize})
+      required this.squareSize,
+      required this.timeInput})
       : super(key: key);
 
   @override
@@ -103,10 +117,15 @@ class ApplyButton extends StatelessWidget {
                 primary: const Color.fromARGB(255, 228, 66, 55),
                 onPrimary: const Color.fromARGB(255, 255, 255, 255),
               ),
-              child: Text(label),
+              child: label,
               onPressed: () {
                 int bombSettings = 0;
                 int sizeSettings = 0;
+                int timeSettings = 0;
+
+                if (isNumeric(timeInput.inputController.text)) {
+                  timeSettings = int.parse(timeInput.inputController.text);
+                }
 
                 if (isNumeric(numberOfBombs.inputController.text)) {
                   bombSettings = int.parse(numberOfBombs.inputController.text);
@@ -119,6 +138,8 @@ class ApplyButton extends StatelessWidget {
                 context
                     .read<GridCubit>()
                     .setSettings(bombSettings, sizeSettings);
+
+                context.read<TimerCubit>().setStartingTime(timeSettings);
               },
             ),
           );
@@ -142,9 +163,11 @@ class Notification extends StatelessWidget {
       child: Container(
         alignment: Alignment.bottomCenter,
         child: const Text(
-          "Number of Bombs should be more than 0 and less than total cells. Square size should be more than 4 and less than 26.",
+          "Minimum number of Bombs is 1 and maximum total cells. Minumum Square size is 5 and Maximum 25. Minimum time is 10 seconds",
           textAlign: TextAlign.center,
-          style: TextStyle(color: Color.fromARGB(135, 59, 59, 59)),
+          style: TextStyle(
+            color: Color.fromARGB(135, 59, 59, 59),
+          ),
         ),
       ),
     );
