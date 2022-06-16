@@ -1,7 +1,10 @@
+import 'dart:ui';
+
 import 'package:flutter/Material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:minesweeper_refactored/logic/Cubits/drawer_cubit/drawer_cubit.dart';
 import 'package:minesweeper_refactored/logic/Cubits/timer_cubit/timer_cubit.dart';
+import 'package:minesweeper_refactored/ui/screens/info_page.dart';
 import 'package:minesweeper_refactored/ui/widgets/text_input.dart';
 import '../../library/useful_methods.dart';
 import '../../logic/Cubits/grid_cubit/grid_cubit.dart';
@@ -78,6 +81,20 @@ class Settings extends StatelessWidget {
           ),
         ),
         const Notification(),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              primary: const Color.fromARGB(185, 158, 158, 158)),
+          child: const Text(
+            'info',
+            style: TextStyle(color: Color.fromARGB(205, 18, 19, 19)),
+          ),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const InfoPage(),
+            ),
+          ),
+        ),
       ]),
     );
   }
@@ -159,7 +176,7 @@ class Notification extends StatelessWidget {
     double height = MediaQuery.of(context).size.height;
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: height / 6, horizontal: 15),
+      padding: EdgeInsets.fromLTRB(12, height / 6, 12, 5),
       child: Container(
         alignment: Alignment.bottomCenter,
         child: const Text(

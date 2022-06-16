@@ -38,8 +38,8 @@ dependencies:
   bloc: ^8.0.3
   flutter_bloc: ^8.0.1
   provider: ^6.0.2
-  zoom_widget: ^0.2.1
-  draggable_scrollbar: ^0.1.0
+  google_fonts: ^3.0.1
+ 
 
 dev_dependencies:
   flutter_test:

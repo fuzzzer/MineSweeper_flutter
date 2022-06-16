@@ -8,7 +8,7 @@ import 'package:minesweeper_refactored/logic/Cubits/flag_cubit/flag_cubit.dart';
 import 'package:minesweeper_refactored/logic/Cubits/grid_cubit/grid_cubit.dart';
 import 'package:minesweeper_refactored/logic/Cubits/timer_cubit/timer_cubit.dart';
 import 'logic/global_logics/initialize_squares_cubit_matrix.dart';
-import 'ui/screens/home_Page.dart';
+import 'ui/screens/home_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
