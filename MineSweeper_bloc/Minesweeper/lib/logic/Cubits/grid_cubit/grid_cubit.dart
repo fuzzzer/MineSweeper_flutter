@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/Material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:minesweeper_refactored/core/info.dart';
+import 'package:minesweeper_refactored/main.dart';
 import '../../../core/keys.dart';
 import '../../../ui/widgets/game_ending_dialog.dart';
 import '../../global_logics/initialize_squares_cubit_matrix.dart';
@@ -25,6 +26,7 @@ class GridCubit extends Cubit<GridState> {
   int sizesOfGrid = startingSizesOfGrid;
   bool boxOpeningProcessRunning = false;
   int squaresOpened = 0;
+  bool gameEnded = false;
 
   late int currentColumn;
   late int currentRow;
@@ -52,6 +54,7 @@ class GridCubit extends Cubit<GridState> {
 
   void updateGrid() async {
     squaresOpened = 0;
+    gameEnded = false;
     gridData =
         await compute(initializedCubitsForGrid, ([bombsCount, sizesOfGrid]));
     setStartingSelectedCell();
@@ -128,7 +131,7 @@ class GridCubit extends Cubit<GridState> {
     return 0;
   }
 
-  void handleOneTap(final TapDownDetails details, final Offset offset,
+  void handleOneTap(final TapUpDetails details, final Offset offset,
       final double gridScreenSize) {
     double currentX = details.globalPosition.dx;
     double currentY = details.globalPosition.dy;
@@ -158,8 +161,12 @@ class GridCubit extends Cubit<GridState> {
       if (gridData[currentRow][currentColumn].hasBomb) {
         gridData[currentRow][currentColumn].revealSquare();
         revealAll(gridData);
-        gameEndingDialog(navigatorKey.currentContext,
-            message: "Boom!", textColor: Colors.red);
+        if (!gameEnded) {
+          gameEndingDialog(navigatorKey.currentContext,
+              message: "Boom!", textColor: Colors.red);
+          gameEnded = true;
+          timerCubit.cancelTimer();
+        }
       } else {
         revealAdjacents(gridData, currentRow, currentColumn);
       }
@@ -168,8 +175,11 @@ class GridCubit extends Cubit<GridState> {
 
   void timeOut() {
     revealAll(gridData);
-    gameEndingDialog(navigatorKey.currentContext,
-        message: "Time out!", textColor: Colors.red);
+    if (!gameEnded) {
+      gameEndingDialog(navigatorKey.currentContext,
+          message: "Time out!", textColor: Colors.red);
+      gameEnded = true;
+    }
   }
 
   void revealAll(
@@ -228,8 +238,12 @@ class GridCubit extends Cubit<GridState> {
     allSquareCubitsData[row][column].revealSquare();
     squaresOpened++;
     if (sizesOfGrid * sizesOfGrid - squaresOpened == bombsCount) {
-      gameEndingDialog(navigatorKey.currentContext,
-          message: 'You Win!', textColor: Colors.green);
+      if (!gameEnded) {
+        gameEndingDialog(navigatorKey.currentContext,
+            message: 'You Win!', textColor: Colors.green);
+        timerCubit.cancelTimer();
+        gameEnded = true;
+      }
     }
   }
 

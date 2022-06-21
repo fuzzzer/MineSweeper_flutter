@@ -55,4 +55,11 @@ class TimerCubit extends Cubit<TimerState> {
       });
     }
   }
+
+  void cancelTimer() {
+    if (timer != null) {
+      timer!.cancel();
+      //emit(state.copyWith(currentTimerIsOn: false));
+    }
+  }
 }

@@ -23,16 +23,16 @@ class Playground extends StatelessWidget {
             maxHeight: MediaQuery.of(context).size.width),
         child: GestureDetector(
           key: globalKey,
-          onTapDown: (details) {
+          onTapUp: (details) {
             final RenderBox renderBox =
                 globalKey.currentContext?.findRenderObject() as RenderBox;
             final Offset offset = renderBox.localToGlobal(Offset.zero);
 
             context.read<GridCubit>().handleOneTap(
-                details,
-                offset,
-                constraints
-                    .maxWidth); //because grid max width because height is equal t it
+                  details,
+                  offset,
+                  constraints.maxWidth,
+                );
           },
           onDoubleTap: () {
             if (context.read<FlagCubit>().state is FlagOn) {
@@ -49,11 +49,7 @@ class Playground extends StatelessWidget {
             if (details.globalPosition.dx > offset.dx &&
                 details.globalPosition.dx < offset.dx + constraints.maxWidth &&
                 details.globalPosition.dy > offset.dy &&
-                details.globalPosition.dy <
-                    offset.dy +
-                        constraints
-                            .maxHeight) // using maxWidth because width and height are the same and width of this widget is expanded till the end
-            {
+                details.globalPosition.dy < offset.dy + constraints.maxHeight) {
               context.read<GridCubit>().onPanUpdate(
                   details, constraints.maxWidth, constraints.maxHeight);
             }
@@ -96,8 +92,7 @@ class Playground extends StatelessWidget {
                   );
                 },
               ),
-              SizedBox(
-                height: 50,
+              Expanded(
                 child: Container(
                   color: const Color.fromARGB(
                       255, 19, 18, 18), // color of the homepagebackground

@@ -10,6 +10,12 @@ import 'package:minesweeper_refactored/logic/Cubits/timer_cubit/timer_cubit.dart
 import 'logic/global_logics/initialize_squares_cubit_matrix.dart';
 import 'ui/screens/home_page.dart';
 
+final timerCubit = TimerCubit(
+  currentTimerIsOn: false,
+  nextRoundTimerIsOn: false,
+  startingTime: startingTime,
+);
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations(
@@ -34,11 +40,7 @@ class MyApp extends StatelessWidget {
                   [startingBombsCount, startingSizesOfGrid])),
         ),
         BlocProvider(
-          create: (context) => TimerCubit(
-            currentTimerIsOn: false,
-            nextRoundTimerIsOn: false,
-            startingTime: startingTime,
-          ),
+          create: (context) => timerCubit,
         ),
         BlocProvider(
           create: (context) => FlagCubit(),

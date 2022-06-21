@@ -44,6 +44,7 @@ class HomePage extends StatelessWidget {
                             if (state.currentTimerIsOn) {
                               if (state.timeLeft == 0) {
                                 context.read<GridCubit>().timeOut();
+                                context.read<TimerCubit>().cancelTimer();
                               }
                             }
                           },
